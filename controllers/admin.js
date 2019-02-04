@@ -57,13 +57,15 @@ exports.postEditProduct = (req, res, next) => {
   res.redirect("/admin/products");
 };
 exports.getProducts = (req, res, next) => {
-  Product.fetchAll(products => {
-    res.render("admin/products", {
-      prods: products,
-      pageTitle: "Admin Products",
-      path: "/admin/products"
-    });
-  });
+  Product.fetchAll()
+    .then(([rows, fieldData]) => {
+      res.render("admin/products", {
+        prods: rows,
+        pageTitle: "Admin Products",
+        path: "/admin/products"
+      });
+    })
+    .catch(console.log);
 };
 
 exports.postDeleteProduct = (req, res, next) => {
