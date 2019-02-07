@@ -1,7 +1,7 @@
 const express = require("express");
 const path = require("path");
 const bodyParser = require("body-parser");
-const db = require("./utils/database");
+const sequelize = require("./utils/database");
 
 const app = express();
 
@@ -19,6 +19,11 @@ app.use(shopRoutes);
 
 app.use(errorController.get404);
 
-app.listen(3000, () => {
-  console.log("Server has started");
-});
+sequelize
+  .sync()
+  .then(() => {
+    app.listen(3000, () => {
+      console.log("Server has started");
+    });
+  })
+  .catch(console.log);
