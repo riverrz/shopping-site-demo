@@ -2,11 +2,11 @@ const express = require("express");
 const path = require("path");
 const bodyParser = require("body-parser");
 
-const mongoConnect = require("./utils/database");
+const mongoConnect = require("./utils/database").mongoConnect;
 const app = express();
 
-// const adminRoutes = require("./routes/admin");
-// const shopRoutes = require("./routes/shop");
+const adminRoutes = require("./routes/admin");
+const shopRoutes = require("./routes/shop");
 
 // const errorController = require("./controllers/error");
 
@@ -21,14 +21,15 @@ app.use((req, res, next) => {
   //     next();
   //   })
   //   .catch(console.log);
+  next();
 });
 
-// app.use("/admin", adminRoutes);
-// app.use(shopRoutes);
+app.use("/admin", adminRoutes);
+app.use(shopRoutes);
 
 // app.use(errorController.get404);
 
-mongoConnect(client => {
+mongoConnect(() => {
   app.listen(3000, () => {
     console.log("Server is running");
   });
