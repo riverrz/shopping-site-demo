@@ -1,8 +1,9 @@
 const express = require("express");
 const path = require("path");
 const bodyParser = require("body-parser");
+const mongoose = require("mongoose");
 
-const mongoConnect = require("./utils/database").mongoConnect;
+const keys = require("./keys/keys");
 const User = require("./models/user");
 const app = express();
 
@@ -29,8 +30,11 @@ app.use(shopRoutes);
 
 // app.use(errorController.get404);
 
-mongoConnect(() => {
-  app.listen(3000, () => {
-    console.log("Server is running");
-  });
-});
+mongoose
+  .connect(keys.MONGO_URI)
+  .then(result => {
+    app.listen(3000, () => {
+      console.log("Server has started");
+    });
+  })
+  .catch(console.log);
