@@ -24,7 +24,7 @@ class Product {
     }
     return dbOp
       .then(result => {
-        console.log(result);
+        console.log("Added/Updated product");
       })
       .catch(console.log);
   }
