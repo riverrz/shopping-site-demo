@@ -16,7 +16,8 @@ exports.postAddProduct = (req, res, next) => {
     title,
     imageUrl,
     description,
-    price
+    price,
+    userId: req.user._id
   });
   product
     .save()
@@ -67,6 +68,8 @@ exports.postEditProduct = (req, res, next) => {
 };
 exports.getProducts = (req, res, next) => {
   Product.find()
+    // .select("title price -_id")  Select only title and price, exclude _id else by default _id is always fetched
+    // .populate("userId", "name") Populate userId , i.e fetch a user by this id and select only the name from the user
     .then(prods => {
       res.render("admin/products", {
         prods,
