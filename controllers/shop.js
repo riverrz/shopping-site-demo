@@ -1,4 +1,5 @@
 const Product = require("../models/product");
+const Order = require("../models/order");
 
 exports.getProducts = (req, res, next) => {
   Product.find()
@@ -73,7 +74,27 @@ exports.postCartDeleteProduct = (req, res, next) => {
 };
 exports.postOrder = (req, res, next) => {
   req.user
-    .addOrder()
+    .populate("cart.items.productId") // populate the productId field with the all the data of that product
+    .execPopulate() // to get a promise from populate
+    .then(user => {
+      const products = user.cart.items.map(i => {
+        return {
+          quantity: i.quantity,
+          product: { ...i.productId._doc } // ._doc gives just the data and removing all the methods which will else interfere
+        };
+      });
+      const order = new Order({
+        user: {
+          name: req.user.name,
+          userId: req.user._id
+        },
+        products
+      });
+      return order.save();
+    })
+    .then(result => {
+      return req.user.clearCart();
+    })
     .then(result => {
       res.redirect("/orders");
     })
