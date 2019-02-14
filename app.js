@@ -3,10 +3,15 @@ const path = require("path");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 const session = require("express-session");
+const MongoDBStore = require("connect-mongodb-session")(session);
 
 const keys = require("./keys/keys");
 const User = require("./models/user");
 const app = express();
+const store = new MongoDBStore({
+  uri: keys.MONGO_URI,
+  collection: "sessions"
+});
 
 const adminRoutes = require("./routes/admin");
 const shopRoutes = require("./routes/shop");
@@ -21,7 +26,8 @@ app.use(
   session({
     secret: "jdhfnjskhncbnjkmnxcbhj",
     resave: false,
-    saveUninitialized: false
+    saveUninitialized: false,
+    store
   })
 );
 
