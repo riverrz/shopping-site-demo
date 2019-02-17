@@ -53,25 +53,8 @@ app.use(errorController.get404);
 mongoose
   .connect(keys.MONGO_URI)
   .then(result => {
-    User.findOne()
-      .then(user => {
-        if (!user) {
-          const user = new User({
-            name: "Shivam",
-            email: "shivam@test.com",
-            cart: {
-              items: []
-            }
-          });
-          return user.save();
-        }
-        return user;
-      })
-      .then(user => {
-        app.listen(3000, () => {
-          console.log("Server has started");
-        });
-      })
-      .catch(console.log);
+    app.listen(3000, () => {
+      console.log("Server has started");
+    });
   })
   .catch(console.log);
