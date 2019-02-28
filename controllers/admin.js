@@ -55,19 +55,21 @@ exports.postEditProduct = (req, res, next) => {
 
   Product.findById(prodId)
     .then(product => {
+      if (product.userId.toString() !== req.user._id.toString()) {
+        return res.redirect("/");
+      }
       product.title = updatedTitle;
       product.description = updatedDescription;
       product.price = updatedPrice;
       product.imageUrl = updatedImageUrl;
-      return product.save();
-    })
-    .then(result => {
-      res.redirect("/admin/products");
+      return product.save().then(result => {
+        res.redirect("/admin/products");
+      });
     })
     .catch(console.log);
 };
 exports.getProducts = (req, res, next) => {
-  Product.find()
+  Product.find({ userId: req.user._id })
     // .select("title price -_id")  Select only title and price, exclude _id else by default _id is always fetched
     // .populate("userId", "name") Populate userId , i.e fetch a user by this id and select only the name from the user
     .then(prods => {
@@ -82,7 +84,7 @@ exports.getProducts = (req, res, next) => {
 
 exports.postDeleteProduct = (req, res, next) => {
   const prodId = req.body.productId;
-  Product.findByIdAndRemove(prodId)
+  Product.deleteOne({ _id: prodId, userId: req.user._id })
     .then(() => {
       res.redirect("/admin/products");
     })
