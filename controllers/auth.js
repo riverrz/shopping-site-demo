@@ -28,24 +28,9 @@ exports.getLogin = (req, res, next) => {
   });
 };
 
-exports.getSignup = (req, res, next) => {
-  let errorMessage = req.flash("error");
-  if (errorMessage.length > 0) {
-    errorMessage = errorMessage[0];
-  } else {
-    errorMessage = null;
-  }
-  res.render("auth/signup", {
-    path: "/signup",
-    pageTitle: "Signup",
-    errorMessage
-  });
-};
-
 exports.postLogin = (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    console.log(errors.array());
     return res.status(422).render("auth/login", {
       path: "/login",
       pageTitle: "Login",
@@ -88,16 +73,37 @@ exports.postLogin = (req, res, next) => {
     .catch(err => console.log(err));
 };
 
+exports.getSignup = (req, res, next) => {
+  let errorMessage = req.flash("error");
+  if (errorMessage.length > 0) {
+    errorMessage = errorMessage[0];
+  } else {
+    errorMessage = null;
+  }
+  res.render("auth/signup", {
+    path: "/signup",
+    pageTitle: "Signup",
+    errorMessage,
+    oldInput: {
+      email: "",
+      password: "",
+      confirmPassword: ""
+    },
+    validationErrors: []
+  });
+};
+
 exports.postSignup = (req, res, next) => {
   const email = req.body.email;
   const password = req.body.password;
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    console.log(errors.array());
     return res.status(422).render("auth/signup", {
       path: "/signup",
       pageTitle: "Signup",
-      errorMessage: errors.array()[0].msg
+      errorMessage: errors.array()[0].msg,
+      oldInput: { email, password, confirmPassword: req.body.confirmPassword },
+      validationErrors: errors.array()
     });
   }
   bcrypt
