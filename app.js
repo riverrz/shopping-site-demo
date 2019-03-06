@@ -50,6 +50,7 @@ app.set("view engine", "ejs");
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(multer({ storage: fileStorage, fileFilter }).single("image"));
 app.use(express.static(path.join(__dirname, "public")));
+app.use("/images",express.static(path.join(__dirname, "images")));
 app.use(
   session({
     secret: "jdhfnjskhncbnjkmnxcbhj",
@@ -60,6 +61,7 @@ app.use(
 );
 app.use(csrfProtection);
 app.use(flash());
+app.use(express.static(path.join(__dirname, "images")));
 
 app.use((req, res, next) => {
   if (!req.session.user) {
