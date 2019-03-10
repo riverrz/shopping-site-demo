@@ -3,6 +3,7 @@ const Order = require("../models/order");
 const fs = require("fs");
 const path = require("path");
 const PDFDocument = require("pdfkit");
+var stripe = require("stripe")("sk_test_gTQgW8EouHmHdF1tSfyolMEF");
 
 const ITEMS_PER_PAGE = 2;
 
@@ -130,11 +131,41 @@ exports.postCartDeleteProduct = (req, res, next) => {
       return next(error);
     });
 };
+exports.getCheckout = (req, res, next) => {
+  req.user
+    .populate("cart.items.productId")
+    .execPopulate() // to get a promise from populate
+    .then(user => {
+      const products = user.cart.items;
+      let total = 0;
+      products.forEach(p => {
+        total += p.quantity * p.productId.price;
+      });
+      res.render("shop/checkout", {
+        path: "/checkout",
+        pageTitle: "Checkout",
+        products,
+        totalSum: total
+      });
+    })
+    .catch(err => {
+      const error = new Error(err);
+      error.httpStatusCode = 500;
+      return next(error);
+    });
+};
 exports.postOrder = (req, res, next) => {
+  // Token is created using Checkout or Elements!
+  // Get the payment token ID submitted by the form:
+  const token = req.body.stripeToken; // Using Express
+  let totalSum = 0;
   req.user
     .populate("cart.items.productId") // populate the productId field with the all the data of that product
     .execPopulate() // to get a promise from populate
     .then(user => {
+      user.cart.items.forEach(p => {
+        totalSum += p.quantity * p.productId.price;
+      });
       const products = user.cart.items.map(i => {
         return {
           quantity: i.quantity,
@@ -151,6 +182,15 @@ exports.postOrder = (req, res, next) => {
       return order.save();
     })
     .then(result => {
+      (async () => {
+        const charge = await stripe.charges.create({
+          amount: totalSum * 100,
+          currency: "usd",
+          description: "Demo Order",
+          source: token,
+          metadata: { order_id: result._id.toString() }
+        });
+      })();
       return req.user.clearCart();
     })
     .then(result => {
